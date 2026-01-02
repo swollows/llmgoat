@@ -102,7 +102,7 @@ class LLManager:
         return shutil.which("huggingface-cli")
 
     def _get_profile(self) -> str:
-        profile = os.environ.get("LLMGOAT_MODEL_PROFILE", DEFAULT_PROFILE).strip().lower()
+        profile = os.environ.get(definitions.LLMGOAT_MODEL_PROFILE, DEFAULT_PROFILE).strip().lower()
         if profile not in MODEL_PROFILES:
             goatlog.warning(
                 f"Unknown LLMGOAT_MODEL_PROFILE='{profile}'. Falling back to '{DEFAULT_PROFILE}'. "
@@ -183,6 +183,11 @@ class LLManager:
     def ensure_profile_models(self, models_dir: str = definitions.DEFAULT_MODELS_FOLDER):
         """
         Download models for the current profile at app startup (unless disabled).
+
+        Flow:
+        1. Determine profile from ENV/CLI (default | dgx)
+        2. For each model in the profile, check if present; if not, download via huggingface-cli
+        3. Log progress clearly so user sees "Downloading... -> Done" or errors
         """
         if os.environ.get("LLMGOAT_SKIP_MODEL_DOWNLOAD", "0") == "1":
             goatlog.warning("LLMGOAT_SKIP_MODEL_DOWNLOAD=1 set; skipping model downloads.")
@@ -195,23 +200,38 @@ class LLManager:
         specs = [MODEL_SPECS[k] for k in profile_keys]
 
         # 사용자가 LLMGOAT_DEFAULT_MODEL을 지정했다면, 그 모델이 SPEC에 존재할 경우
-        # 프로필과 무관하게 “추가로” 보장 다운로드.
+        # 프로필과 무관하게 "추가로" 보장 다운로드.
         selected_model = os.environ.get(definitions.LLMGOAT_DEFAULT_MODEL)
         if selected_model:
             extra = self._spec_by_model_filename(selected_model)
             if extra and extra not in specs:
                 specs.insert(0, extra)
 
-        goatlog.info(f"Model profile = '{profile}'. Will ensure: {[s['name'] for s in specs]}")
+        goatlog.info("=" * 60)
+        goatlog.info(f"[Model Setup] Profile = '{profile}'")
+        goatlog.info(f"[Model Setup] Models to ensure: {[s['name'] for s in specs]}")
+        goatlog.info("=" * 60)
 
-        for spec in specs:
+        for i, spec in enumerate(specs, 1):
+            model_name = spec["name"]
+            target_path = os.path.join(models_dir, model_name)
+
+            if os.path.exists(target_path):
+                goatlog.info(f"[{i}/{len(specs)}] ✓ Already present: {model_name}")
+                continue
+
+            goatlog.info(f"[{i}/{len(specs)}] ↓ Downloading: {model_name} from {spec['repo_id']}...")
             try:
                 if self._ensure_model_present(spec, models_dir=models_dir):
-                    goatlog.info(f"Model present: {spec['name']}")
+                    goatlog.info(f"[{i}/{len(specs)}] ✓ Download complete: {model_name}")
                 else:
-                    goatlog.warning(f"Model missing after download attempt: {spec['name']}")
+                    goatlog.warning(f"[{i}/{len(specs)}] ✗ Download failed (file not found after attempt): {model_name}")
             except Exception as e:
-                goatlog.warning(f"Could not ensure model '{spec['name']}': {e}")
+                goatlog.warning(f"[{i}/{len(specs)}] ✗ Download error for '{model_name}': {e}")
+
+        goatlog.info("=" * 60)
+        goatlog.info("[Model Setup] Model preparation complete. Proceeding to load...")
+        goatlog.info("=" * 60)
 
     # ----------------------------
     # Singleton
@@ -235,10 +255,15 @@ class LLManager:
             return
         self._init_started = True
 
-        # Profile-based model preparation (IMPORTANT)
+        goatlog.info("=" * 60)
+        goatlog.info("[LLManager] Initializing...")
+        goatlog.info("=" * 60)
+
+        # Profile-based model preparation (downloads if needed)
         self.ensure_profile_models()
 
         available_models = self.available_models()
+        goatlog.info(f"[LLManager] Available models: {available_models}")
 
         selected_model = os.environ.get(definitions.LLMGOAT_DEFAULT_MODEL)
 
@@ -250,8 +275,8 @@ class LLManager:
             )
 
         # 1) If available load the selected model
-        if selected_model in available_models:
-            goatlog.info("Selected model is available, loading it...")
+        if selected_model and selected_model in available_models:
+            goatlog.info(f"[LLManager] Loading user-selected model: {selected_model}")
             self.load_model(selected_model)
         else:
             # 2) Otherwise load by profile priority
@@ -260,14 +285,14 @@ class LLManager:
             loaded = False
             for candidate in priority:
                 if candidate in available_models:
-                    goatlog.info(f"Loading by profile priority: {candidate}")
+                    goatlog.info(f"[LLManager] Loading by profile priority: {candidate}")
                     self.load_model(candidate)
                     loaded = True
                     break
 
             # 3) Fallback: first available
             if not loaded:
-                goatlog.info(f"Loading the first available model: {available_models[0]}")
+                goatlog.info(f"[LLManager] Fallback: loading first available model: {available_models[0]}")
                 self.load_model(available_models[0])
 
         # Set HF verbosity
@@ -277,8 +302,12 @@ class LLManager:
             TransformersUtils.logging.disable_progress_bar()
             TransformersUtils.logging.set_verbosity_error()
 
-        # Load additional stuff
+        # Load additional stuff (BLIP for image challenges)
         self.load_additional_models()
+
+        goatlog.info("=" * 60)
+        goatlog.info(f"[LLManager] Ready. Current model: {self._current_model}")
+        goatlog.info("=" * 60)
 
     def free_llm_instance(self):
         if self._llm_instance is not None:

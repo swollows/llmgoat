@@ -15,8 +15,6 @@ from llmgoat.utils.logger import goatlog
 app = Flask(__name__)
 app.secret_key = "your-super-secret-key"  # Needed for session support
 
-# NOTE: llmgoat.llm.manager 쪽에서 읽는 프로필 ENV 키 (definitions에 상수가 없어서 문자열로 둠)
-LLMGOAT_MODEL_PROFILE_ENV = "LLMGOAT_MODEL_PROFILE"
 
 OWASP_TOP_10 = [
     {"id": "a01-prompt-injection", "title": "A01: Prompt Injection"},
@@ -225,7 +223,7 @@ def parse_args():
 
     # --platform을 명시했을 때만 프로필을 설정 (ENV가 이미 있으면 그대로 두고, 없을 때만 CLI 값으로 채움)
     if args.platform:
-        helpers.set_env_if_empty(LLMGOAT_MODEL_PROFILE_ENV, _map_platform_to_profile(args.platform))
+        helpers.set_env_if_empty(definitions.LLMGOAT_MODEL_PROFILE, _map_platform_to_profile(args.platform))
 
     # Get if running in verbose mode, args value can't be used because the ENV takes precedence
     verbose_env_value = os.environ.get(definitions.LLMGOAT_VERBOSE, str(int(False)))
