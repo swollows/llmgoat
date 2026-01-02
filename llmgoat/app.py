@@ -15,6 +15,9 @@ from llmgoat.utils.logger import goatlog
 app = Flask(__name__)
 app.secret_key = "your-super-secret-key"  # Needed for session support
 
+# NOTE: llmgoat.llm.manager 쪽에서 읽는 프로필 ENV 키 (definitions에 상수가 없어서 문자열로 둠)
+LLMGOAT_MODEL_PROFILE_ENV = "LLMGOAT_MODEL_PROFILE"
+
 OWASP_TOP_10 = [
     {"id": "a01-prompt-injection", "title": "A01: Prompt Injection"},
     {"id": "a02-sensitive-information-disclosure", "title": "A02: Sensitive Information Disclosure"},
@@ -69,6 +72,7 @@ def load_challenge(challenge_id):
         selected_model=LLManager().get_current_model_name()
     )
 
+
 @app.route("/api/model_status", methods=["GET"])
 def get_model_status():
     acquired = llm_lock.acquire(blocking=False)
@@ -118,7 +122,6 @@ def challenge_api(challenge_id):
             return jsonify({"error": f"Challenge logic not found."}), 404
 
         challenge_module = importlib.import_module(f"llmgoat.challenges.{challenge_id.replace('-', '_')}")
-        # return challenge_module.handle_request(request, llm)
         response = challenge_module.handle_request(request)
 
         # check if the challenge is solved
@@ -152,6 +155,7 @@ def print_custom_help():
     ╭─ Options ───────────────────────────────────────────────────────────────────────────────────────╮
     │ --host         -h        TEXT     Host for API server (e.g. '0.0.0.0') [default: 127.0.0.1]     │
     │ --port         -p        INTEGER  Port for API server [default: 5000]                           │
+    │ --platform               TEXT     Target platform: windows|dgx (maps to model profile)          │
     │ --model        -m        TEXT     The default model to use [default: gemma-2]                   │
     │ --threads      -t        INTEGER  Number of LLM threads [default: 16]                           │
     │ --gpu-layers   -g        INTEGER  Number of GPU layers to use [default: 0 (no GPU)]             │
@@ -164,10 +168,31 @@ def print_custom_help():
     sys.exit(0)
 
 
+def _map_platform_to_profile(platform_value: str) -> str:
+    """
+    windows -> default (가벼운/기본 프로필)
+    dgx     -> dgx     (대형 모델 포함 프로필)
+    """
+    v = (platform_value or "").strip().lower()
+    if v == "windows":
+        return "default"
+    if v == "dgx":
+        return "dgx"
+    # 안전장치: 이상한 값이 들어오면 기본으로
+    return "default"
+
+
 def parse_args():
     parser = argparse.ArgumentParser(prog=__title__, description=__description__, add_help=False,)
     parser.add_argument("--host", "-h", type=str, default="127.0.0.1", help="Host for API server (e.g. '0.0.0.0')")
     parser.add_argument("--port", "-p", type=int, default=5000, help="Port for API server")
+    parser.add_argument(
+        "--platform",
+        type=str,
+        default="",
+        choices=["windows", "dgx"],
+        help="Select target platform (windows|dgx). Sets LLMGOAT_MODEL_PROFILE unless already set in ENV.",
+    )
     parser.add_argument("--model", "-m", type=str, default="gemma-2.gguf", help="The default model to use")
     parser.add_argument("--threads", "-t", type=int, default=os.cpu_count(), help="Number of LLM threads")
     parser.add_argument("--gpu-layers", "-g", type=int, default=0, help="Number of GPU layers to use")
@@ -197,6 +222,10 @@ def parse_args():
     helpers.set_env_if_empty(definitions.LLMGOAT_DEBUG, str(int(args.debug)))  # "1" if True, "0" otherwise
     if args.prompt_format:
         helpers.set_env_if_empty(definitions.LLMGOAT_PROMPT_FORMAT, args.prompt_format)
+
+    # --platform을 명시했을 때만 프로필을 설정 (ENV가 이미 있으면 그대로 두고, 없을 때만 CLI 값으로 채움)
+    if args.platform:
+        helpers.set_env_if_empty(LLMGOAT_MODEL_PROFILE_ENV, _map_platform_to_profile(args.platform))
 
     # Get if running in verbose mode, args value can't be used because the ENV takes precedence
     verbose_env_value = os.environ.get(definitions.LLMGOAT_VERBOSE, str(int(False)))
