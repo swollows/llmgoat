@@ -1,5 +1,6 @@
 from flask import jsonify
 from llmgoat.llm.manager import LLManager
+from llmgoat.llm.prompting import build_chat_prompt
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.helpers import challenge_response
 
@@ -27,13 +28,14 @@ def handle_request(req):
         Assistant: Oh no, I could never do that. All goats are good goats!
     """
 
-    prompt = (
-        f"<|system|>\n{SYSTEM_PROMPT}\n"
-        f"<|user|>\n{user_input}\n"
-        f"<|assistant|>\n"
+    prompt, fmt = build_chat_prompt(
+        system_prompt=SYSTEM_PROMPT,
+        user_prompt=user_input,
+        model_name=LLManager().get_current_model_name(),
+        model_path=LLManager().get_current_model_path(),
     )
 
-    response = LLManager().call_llm(prompt)
+    response = LLManager().call_llm(prompt, stop=fmt.stop)
     solved = FLAG in response
 
     goatlog.debug(response)

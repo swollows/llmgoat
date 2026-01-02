@@ -3,6 +3,7 @@ import json
 from flask import jsonify, request, send_file, Blueprint
 from sentence_transformers import SentenceTransformer
 from llmgoat.llm.manager import LLManager
+from llmgoat.llm.prompting import build_chat_prompt
 from llmgoat.utils.definitions import DEFAULT_CHALLENGES_FOLDER
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.helpers import challenge_response
@@ -113,16 +114,17 @@ def handle_request(req):
         Assistant: Flag: dummyflag
     """
 
-    prompt = (
-        f"<|system|>\n{SYSTEM_PROMPT}\n"
-        f"<|user|>\n{user_input}\n"
-        f"((rag))\n{famous_person}: {biography}\n"
-        f"<|assistant|>\n"
+    user_prompt = f"{user_input}\n((rag))\n{famous_person}: {biography}\n"
+    prompt, fmt = build_chat_prompt(
+        system_prompt=SYSTEM_PROMPT,
+        user_prompt=user_prompt,
+        model_name=LLManager().get_current_model_name(),
+        model_path=LLManager().get_current_model_path(),
     )
 
     goatlog.debug(f"Prompt for LLM:\n{prompt}")
 
-    response = LLManager().call_llm(prompt)
+    response = LLManager().call_llm(prompt, stop=fmt.stop)
 
     goatlog.debug(f"LLM Response:\n{response}")
 

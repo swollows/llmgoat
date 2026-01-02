@@ -4,6 +4,7 @@ import copy
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from llmgoat.llm.manager import LLManager
+from llmgoat.llm.prompting import build_chat_prompt
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.helpers import challenge_response
 
@@ -154,10 +155,15 @@ def handle_request(request):
 
     user_prompt = f"Selected attributes: {', '.join(selected_attributes)}\nRelevant Reviews:\n{reviews_text}\n"
 
-    full_prompt = f"<|system|>\n{SYSTEM_PROMPT}\n<|user|>\n{user_prompt}\n<|assistant|>\n"
+    full_prompt, fmt = build_chat_prompt(
+        system_prompt=SYSTEM_PROMPT,
+        user_prompt=user_prompt,
+        model_name=LLManager().get_current_model_name(),
+        model_path=LLManager().get_current_model_path(),
+    )
 
     # Call LLM
-    recommendation = LLManager().call_llm(full_prompt)
+    recommendation = LLManager().call_llm(full_prompt, stop=fmt.stop)
     goatlog.debug(recommendation)
 
     solved = "space chicken" in recommendation.lower()

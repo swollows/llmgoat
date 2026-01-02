@@ -3,6 +3,7 @@ import gc
 from llama_cpp import Llama
 from transformers import BlipProcessor, BlipForConditionalGeneration, utils as TransformersUtils
 from llmgoat.utils import definitions
+from llmgoat.llm.prompting import detect_prompt_format, detect_prompt_format_details
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.helpers import download_file  # , sha256_of_file
 from llmgoat.utils.llama_logger import capture_llama_prints
@@ -15,7 +16,6 @@ DEFAULT_MODEL = {
 }
 MAX_TOKENS = 256
 TEMPERATURE = 0.7
-LLM_STOP = ["<|user|>", "<|system|>"]
 
 
 class LLManager:
@@ -23,6 +23,8 @@ class LLManager:
     _init_started = False  # Ensure init is run only once
     _llm_instance = None  # the LLM current instance
     _current_model = None  # the currently loaded model (name)
+    _current_model_path = None  # the currently loaded model path
+    _prompt_format = None  # cached PromptFormat for the current model
 
     def __new__(cls):
         if cls._instance is None:
@@ -111,6 +113,12 @@ class LLManager:
                     self._llm_instance = Llama(model_path=model_path, n_ctx=40960, n_threads=n_threads, n_batch=32, n_gpu_layers=n_gpu_layers, verbose=is_verbose)
                 # Set current model name
                 self._current_model = model
+                self._current_model_path = model_path
+                # Cache prompt format once (metadata-based if possible)
+                self._prompt_format, fmt_reason = detect_prompt_format_details(model, model_path=model_path)
+                goatlog.info(
+                    f"Prompt format: {self._prompt_format.name} (reason={fmt_reason}, stop={self._prompt_format.stop})"
+                )
 
                 goatlog.info(f"Hardware config: {n_threads} CPU cores, n_gpu_layers: {n_gpu_layers}")
             except Exception as e:
@@ -128,14 +136,22 @@ class LLManager:
     def get_current_model_name(self):
         return self._current_model
 
-    def call_llm(self, prompt):
+    def get_current_model_path(self):
+        return self._current_model_path
+
+    def call_llm(self, prompt, stop=None):
         try:
             llm = self.get_model()
+            if stop is None:
+                if self._prompt_format is not None:
+                    stop = self._prompt_format.stop
+                else:
+                    stop = detect_prompt_format(self.get_current_model_name(), model_path=self.get_current_model_path()).stop
             output = llm(
                 prompt,
                 max_tokens=MAX_TOKENS,
                 temperature=TEMPERATURE,
-                stop=LLM_STOP
+                stop=stop
             )
             return output["choices"][0]["text"].strip()
         except:

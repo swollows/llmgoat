@@ -171,6 +171,12 @@ def parse_args():
     parser.add_argument("--model", "-m", type=str, default="gemma-2.gguf", help="The default model to use")
     parser.add_argument("--threads", "-t", type=int, default=os.cpu_count(), help="Number of LLM threads")
     parser.add_argument("--gpu-layers", "-g", type=int, default=0, help="Number of GPU layers to use")
+    parser.add_argument(
+        "--prompt-format",
+        type=str,
+        default="",
+        help="Force prompt format (auto, qwen_chatml, gemma_official, gemma_turns, llama3_instruct)",
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Display verbose output")
     parser.add_argument("--debug", "-d", action="store_true", help="Enable debug mode and get prompts")
     parser.add_argument("--help", action="store_true", help="Show this message and exit.")
@@ -189,6 +195,8 @@ def parse_args():
     helpers.set_env_if_empty(definitions.LLMGOAT_N_GPU_LAYERS, str(args.gpu_layers))
     helpers.set_env_if_empty(definitions.LLMGOAT_VERBOSE, str(int(args.verbose)))  # "1" if True, "0" otherwise
     helpers.set_env_if_empty(definitions.LLMGOAT_DEBUG, str(int(args.debug)))  # "1" if True, "0" otherwise
+    if args.prompt_format:
+        helpers.set_env_if_empty(definitions.LLMGOAT_PROMPT_FORMAT, args.prompt_format)
 
     # Get if running in verbose mode, args value can't be used because the ENV takes precedence
     verbose_env_value = os.environ.get(definitions.LLMGOAT_VERBOSE, str(int(False)))
