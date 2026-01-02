@@ -125,26 +125,30 @@ python -m venv venv
 # 저장소 클론 및 설치
 git clone https://github.com/swollows/llmgoat.git
 cd llmgoat
+
+# 환경 변수 설정
+set CMAKE_ARGS="-DLLAMA_CUBLAS=on"
+set FORCE_CMAKE=1
+
+# 설치
 pip install -e .
 ```
 
 **2. 모델 다운로드 (HuggingFace CLI)**
 HuggingFace CLI를 통해 모델을 다운로드하여 관리합니다.
+(이미 LLMGoat 라이브러리 설치 과정에서 huggingface-cli가 설치됨)
 ```powershell
-# HuggingFace 라이브러리 설치
-pip install huggingface_hub
-
 # Qwen 3 8B Instruct Q8_0 다운로드 (~9GB)
 # (16GB VRAM에서 넉넉하게 구동 가능하며, Q4보다 품질이 월등함)
-huggingface-cli download Qwen/Qwen3-8B-Instruct-GGUF `
-  qwen3-8b-instruct-q8_0.gguf `
+huggingface-cli download devmasa/Qwen3-8B-Q8_0-GGUF `
+  qwen3-8b-q8_0.gguf `
   --local-dir C:\Users\<username>\.LLMGoat\models
 ```
 
 **3. LLMGoat 연동 및 실행**
 ```powershell
 # LLMGoat에 다운로드 받은 모델을 사용하여 서버 실행
-llmgoat --model C:\Users\<username>\.LLMGoat\models\qwen3-8b-instruct-q8_0.gguf --gpu-layers -1 --host 0.0.0.0
+llmgoat --model C:\Users\<username>\.LLMGoat\models\qwen3-8b-q8_0.gguf --gpu-layers -1 --host 0.0.0.0
 ```
 *   이제 브라우저에서 `http://127.0.0.1:5000`으로 접속하면 LM Studio에 떠 있는 Qwen 3 모델과 대화하게 됩니다.
 

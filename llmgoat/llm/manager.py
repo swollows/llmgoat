@@ -108,7 +108,7 @@ class LLManager:
                 verbose_env_value = os.environ.get(definitions.LLMGOAT_VERBOSE, str(int(False)))
                 is_verbose = True if verbose_env_value == "1" else False
                 with capture_llama_prints():
-                    self._llm_instance = Llama(model_path=model_path, n_ctx=1024, n_threads=n_threads, n_batch=32, n_gpu_layers=n_gpu_layers, verbose=is_verbose)
+                    self._llm_instance = Llama(model_path=model_path, n_ctx=40960, n_threads=n_threads, n_batch=32, n_gpu_layers=n_gpu_layers, verbose=is_verbose)
                 # Set current model name
                 self._current_model = model
 
