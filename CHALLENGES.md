@@ -16,7 +16,7 @@ LLMGoat은 OWASP LLM Top 10 취약점을 학습할 수 있는 CTF 스타일 플�
 **권장:** 128GB 통합 메모리의 이점을 활용하여 최고의 속도와 품질을 경험하고 싶을 때.
 
 *   **하드웨어:** NVIDIA Grace-Blackwell (128GB 통합 메모리 ARM)
-*   **모델:** **Qwen 2.5 32B Instruct (FP16)**
+*   **모델:** **Qwen 3 32B Instruct (FP16)**
 *   **도구:** `llama-cpp-python` (CLI)
 
 #### 설치 및 실행 (DGX)
@@ -59,18 +59,18 @@ cd llmgoat
 pip install -e .
 ```
 
-**3. 모델 엔진 설치 + 연동 (llama-cpp-python)**
+**2. 모델 엔진 설치 + 연동 (llama-cpp-python)**
 ```bash
 # 1. CUDA + ARM 최적화 빌드
 CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python --force-reinstall --no-cache-dir
 
 # 2. HuggingFace CLI로 ~65GB 모델 다운로드
-huggingface-cli download Qwen/Qwen2.5-32B-Instruct-GGUF \
-  qwen2.5-32b-instruct-fp16.gguf \
+huggingface-cli download Qwen/Qwen3-32B-Instruct-GGUF \
+  qwen3-32b-instruct-fp16.gguf \
   --local-dir ~/.llmgoat/models
 
 # 3. 통합 메모리(GPU)에 모든 레이어를 올려 실행 (-1)
-llmgoat --model qwen2.5-32b-instruct-fp16.gguf --gpu-layers -1 --host 0.0.0.0
+llmgoat --model qwen3-32b-instruct-fp16.gguf --gpu-layers -1 --host 0.0.0.0
 ```
 
 ---
@@ -79,7 +79,7 @@ llmgoat --model qwen2.5-32b-instruct-fp16.gguf --gpu-layers -1 --host 0.0.0.0
 **권장:** RTX 5060 Ti와 같은 소비자용 고성능 그래픽카드 환경.
 
 *   **하드웨어:** NVIDIA RTX 5060 Ti (16GB VRAM) + 32GB RAM
-*   **모델:** **Qwen 2.5 32B Instruct (Q4_K_M)**
+*   **모델:** **Qwen 3 8B Instruct (Q8_0)** (베이스: Qwen/Qwen3-8B)
 *   **도구:** `LM Studio` (GUI) + `LLMGoat`
 
 #### 설치 및 실행 (Windows)
@@ -128,20 +128,23 @@ cd llmgoat
 pip install -e .
 ```
 
-**2. LM Studio 설정 (모델 서버)**
-1.  **LM Studio 설치:** 공식 홈페이지에서 다운로드 후 실행.
-2.  **모델 준비:** `Qwen 2.5 32B` 검색 후 **Q4_K_M** (약 20GB) 다운로드.
-3.  **서버 시작 (Local Server):**
-    *   우측 탭에서 `Loopback (Local Server)` 선택.
-    *   **GPU Offload:** Max (게이지 끝까지). VRAM 16GB 초과분은 RAM으로 자동 할당됩니다.
-    *   **Start Server** 버튼 클릭 (포트 `5000` 확인).
+**2. 모델 다운로드 (HuggingFace CLI)**
+HuggingFace CLI를 통해 모델을 다운로드하여 관리합니다.
+```powershell
+# HuggingFace 라이브러리 설치
+pip install huggingface_hub
+
+# Qwen 3 8B Instruct Q8_0 다운로드 (~9GB)
+# (16GB VRAM에서 넉넉하게 구동 가능하며, Q4보다 품질이 월등함)
+huggingface-cli download Qwen/Qwen3-8B-Instruct-GGUF `
+  qwen3-8b-instruct-q8_0.gguf `
+  --local-dir C:\Users\<username>\.LLMGoat\models
+```
 
 **3. LLMGoat 연동 및 실행**
-LLMGoat은 기본적으로 로컬호스트 5000번 포트를 바라보도록 설정되어 있습니다. (LM Studio가 이 역할을 대신합니다.)
 ```powershell
-# 별도 모델 로드 없이 서버 모드로 실행 (LM Studio와 연동)
-# --model 옵션을 생략하면 됩니다.
-llmgoat
+# LLMGoat에 다운로드 받은 모델을 사용하여 서버 실행
+llmgoat --model C:\Users\<username>\.LLMGoat\models\qwen3-8b-instruct-q8_0.gguf --gpu-layers -1 --host 0.0.0.0
 ```
 *   이제 브라우저에서 `http://127.0.0.1:5000`으로 접속하면 LM Studio에 떠 있는 Qwen 3 모델과 대화하게 됩니다.
 
@@ -149,38 +152,13 @@ llmgoat
 
 ## 선택된 모델 (Selected Model)
 
-현재 라이브러리 버전(0.3.16) 호환성을 고려하여 **Qwen 2.5**를 기본 모델로 사용합니다.
+2026년 기준 최신 SOTA 모델인 **Qwen 3**를 사용합니다.
 
 | 환경 | 모델명 | 파라미터 | 양자화 | 용량 | 특징 |
 |---|---|---|---|---|---|
-| **DGX Spark** | **Qwen 2.5 32B** | 32.5B | **FP16** | ~65 GB | ✅ **Max Quality** (128GB 통합 메모리 활용) |
-| DGX Spark | Qwen 2.5 32B | 32.5B | Q8_0 | ~35 GB | Balanced Option (더 빠른 속도 필요 시) |
-| **Windows** | **Qwen 2.5 32B** | 32.5B | **Q4_K_M** | ~20 GB | ✅ **Consumer GPU** (VRAM+RAM 혼용) |
-| **Alternative** | **GPT OSS 20B** | 21B (MoE) | **Q4_K_M** | ~12 GB | 🚀 **OpenAI Quality** (16GB VRAM 완벽 호환) |
-
----
-
-## 설치 및 실행 (추가 옵션: GPT OSS 20B)
-
-만약 **GPT OSS 20B** 사용을 원하신다면 아래 명령어를 참고하세요. (Windows 16GB VRAM 환경에 최적화되어 있습니다.)
-
-### 모델 다운로드
-```bash
-# GPT OSS 20B Q4_K_M 다운로드 (~12GB)
-huggingface-cli download openai/gpt-oss-20b-gguf \
-  gpt-oss-20b-q4_k_m.gguf \
-  --local-dir ~/.llmgoat/models
-# (Windows의 경우 C:\Users\<username>\.llmgoat\models 경로 지정)
-```
-
-### 실행
-```bash
-# DGX 또는 CLI 실행 시
-llmgoat --model gpt-oss-20b-q4_k_m.gguf --gpu-layers -1 --host 0.0.0.0
-
-# Windows (LM Studio)
-# LM Studio에서 'gpt-oss-20b' 검색 후 Q4_K_M 다운로드 -> Server Start
-```
+| **DGX Spark** | **Qwen 3 32B** | 32.5B | **FP16** | ~65 GB | ✅ **Max Quality** (DGX 최적) |
+| **Windows** | **Qwen 3 8B** | 8B | **Q8_0** | ~9 GB | ✅ **High Performance** (속도/품질 최적) |
+| Alternative | GPT OSS 20B | 21B (MoE) | Q4_K_M | ~12 GB | Optional (OpenAI Quality) |
 
 ---
 
