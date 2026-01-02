@@ -4,6 +4,7 @@ from llama_cpp import Llama
 from transformers import BlipProcessor, BlipForConditionalGeneration, utils as TransformersUtils
 from llmgoat.utils import definitions
 from llmgoat.llm.prompting import detect_prompt_format, detect_prompt_format_details
+from llmgoat.llm.output_sanitizer import strip_think_blocks
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.helpers import download_file  # , sha256_of_file
 from llmgoat.utils.llama_logger import capture_llama_prints
@@ -153,6 +154,7 @@ class LLManager:
                 temperature=TEMPERATURE,
                 stop=stop
             )
-            return output["choices"][0]["text"].strip()
+            text = output["choices"][0]["text"].strip()
+            return strip_think_blocks(text)
         except:
             return "Error 500: The goat chewed on the server cables again."
