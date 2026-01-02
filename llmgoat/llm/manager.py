@@ -1,7 +1,6 @@
 import os
 import gc
 import shutil
-import subprocess
 
 from llama_cpp import Llama
 from transformers import BlipProcessor, BlipForConditionalGeneration, utils as TransformersUtils
@@ -12,6 +11,13 @@ from llmgoat.llm.output_sanitizer import strip_think_blocks
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.helpers import download_file  # kept for backward compat
 from llmgoat.utils.llama_logger import capture_llama_prints
+
+# huggingface_hub for direct Python downloads (avoids CLI encoding issues on Windows)
+try:
+    from huggingface_hub import hf_hub_download
+    HF_HUB_AVAILABLE = True
+except ImportError:
+    HF_HUB_AVAILABLE = False
 
 
 # ----------------------------
@@ -98,9 +104,6 @@ class LLManager:
     def _ensure_models_dir(self, models_dir: str):
         os.makedirs(models_dir, exist_ok=True)
 
-    def _hf_cli_path(self):
-        return shutil.which("huggingface-cli")
-
     def _get_profile(self) -> str:
         profile = os.environ.get(definitions.LLMGOAT_MODEL_PROFILE, DEFAULT_PROFILE).strip().lower()
         if profile not in MODEL_PROFILES:
@@ -111,37 +114,35 @@ class LLManager:
             return DEFAULT_PROFILE
         return profile
 
-    def _run_hf_cli_download(self, repo_id: str, filename: str, local_dir: str):
+    def _download_from_hf(self, repo_id: str, filename: str, local_dir: str):
         """
-        Download a single file from Hugging Face Hub using huggingface-cli.
+        Download a single file from Hugging Face Hub using Python API (hf_hub_download).
+
+        This avoids Windows CLI encoding issues (cp949 vs UTF-8) and deprecated CLI warnings.
 
         NOTE:
         - Gemma 계열은 Hugging Face에서 라이선스 동의/로그인이 필요할 수 있음.
           (huggingface-cli login + 해당 모델 페이지에서 약관 동의)
         """
-        cli = self._hf_cli_path()
-        if not cli:
+        if not HF_HUB_AVAILABLE:
             raise RuntimeError(
-                "huggingface-cli not found in PATH. "
-                "Install it (pip install -U 'huggingface_hub[cli]') or add it to PATH."
+                "huggingface_hub not installed. "
+                "Install it: pip install -U huggingface_hub"
             )
 
-        cmd = [cli, "download", repo_id, filename, "--local-dir", local_dir]
+        goatlog.info(f"[HF] Downloading: {repo_id}/{filename} -> {local_dir}")
 
-        # Windows에서 symlink 이슈 회피 옵션(환경에 따라 필요)
-        if os.name == "nt":
-            cmd += ["--local-dir-use-symlinks", "False"]
+        # hf_hub_download returns the path to the downloaded file (in cache by default)
+        # We use local_dir to place it directly where we want.
+        downloaded_path = hf_hub_download(
+            repo_id=repo_id,
+            filename=filename,
+            local_dir=local_dir,
+            local_dir_use_symlinks=False,  # Windows-safe
+        )
 
-        goatlog.info(f"[HF] Downloading via CLI: {repo_id}/{filename} -> {local_dir}")
-
-        res = subprocess.run(cmd, capture_output=True, text=True)
-        if res.returncode != 0:
-            raise RuntimeError(
-                "huggingface-cli download failed.\n"
-                f"cmd: {' '.join(cmd)}\n"
-                f"stdout:\n{res.stdout}\n"
-                f"stderr:\n{res.stderr}\n"
-            )
+        goatlog.info(f"[HF] Downloaded to: {downloaded_path}")
+        return downloaded_path
 
     def _find_file_recursive(self, root_dir: str, target_name: str):
         for root, _, files in os.walk(root_dir):
@@ -159,10 +160,10 @@ class LLManager:
         if os.path.exists(target_path):
             return True
 
-        # Download via huggingface-cli
-        self._run_hf_cli_download(spec["repo_id"], spec["filename"], models_dir)
+        # Download via Python API (hf_hub_download)
+        self._download_from_hf(spec["repo_id"], spec["filename"], models_dir)
 
-        # huggingface-cli가 nested 경로에 놓는 경우가 있어 root로 끌어올림
+        # hf_hub_download이 nested 경로에 놓는 경우가 있어 root로 끌어올림
         if not os.path.exists(target_path):
             found = self._find_file_recursive(models_dir, spec["filename"])
             if found:
