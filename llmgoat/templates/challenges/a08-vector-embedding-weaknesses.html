@@ -1,19 +1,19 @@
 <div class="description-box">
   <div class="line-col" aria-hidden="true"></div>
   <div class="content">
-    <h2 class="title">{{ translations.a08_title | default('A08: Vector and Embedding Weaknesses') }}</h2>
-    <p>{{ translations.a08_description | default('This challenge demonstrates <a href="https://genai.owasp.org/llmrisk/llm082025-vector-and-embedding-weaknesses/" target="_blank">vector and embedding weaknesses</a>.') | safe }}</p>
-    <p>{{ translations.a08_goal | default('Your goal is to get the assistant to reveal the hidden flag by manipulating the vector file.') }}</p>
+    <h2 class="title">A08: Vector and Embedding Weaknesses</h2>
+    <p>This challenge demonstrates <a href="https://genai.owasp.org/llmrisk/llm082025-vector-and-embedding-weaknesses/" target="_blank">vector and embedding weaknesses</a>.</p>
+    <p>Your goal is to get the assistant to reveal the hidden flag by manipulating the vector file.</p>
     <br>
-    <a href="https://www.secforce.com/blog/llmgoat-a08-vector-and-embedding-weaknesses/" target="_blank" class="button">{{ translations.solution | default('SOLUTION') }}</a>
+    <a href="https://www.secforce.com/blog/llmgoat-a08-vector-and-embedding-weaknesses/" target="_blank" class="button">SOLUTION</a>
   </div>
 </div>
 
 <div class="button-box">
   <input type="file" id="import-file" style="display:none" />
-  <button id="import-btn" class="button">{{ translations.a08_import | default('IMPORT VECTORS') }}</button>
-  <button id="export-btn" class="button">{{ translations.a08_export | default('EXPORT VECTORS') }}</button>
-  <button id="reset-btn" class="button">{{ translations.a08_reset | default('RESET VECTORS') }}</button>
+  <button id="import-btn" class="button">IMPORT VECTORS</button>
+  <button id="export-btn" class="button">EXPORT VECTORS</button>
+  <button id="reset-btn" class="button">RESET VECTORS</button>
 </div>
 
 <script type="module">
@@ -33,8 +33,8 @@
 <div class="chat-container">
   <div class="messages" id="messages"></div>
   <form id="challenge-form" class="input-bar">
-    <textarea id="input" name="input" placeholder="{{ translations.placeholder_message | default('Type your message... (Shift + Enter for new line)') }}" rows="2" required></textarea>
-    <button type="submit" id="submit-btn">{{ translations.send | default('SEND') }}</button>
+    <textarea id="input" name="input" placeholder="Type your message... (Shift + Enter for new line)" rows="2" required></textarea>
+    <button type="submit" id="submit-btn">Send</button>
   </form>
 </div>
 

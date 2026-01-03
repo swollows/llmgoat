@@ -1,19 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Jersey+10&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Electrolize&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
 /* fonts */
 @font-face {
   font-family: pixeltype;
   src: url(pixeltype.woff);
-}
-
-/* 한국어 폰트 크기 조정 */
-:lang(ko) {
-  font-family: pixeltype, "Noto Sans KR", sans-serif;
-  font-size: 0.85em;
-  line-height: 1.5;
 }
 
 .jersey-10-regular {
@@ -42,57 +34,12 @@ html, body {
 }
 
 body {
-    font-family: pixeltype, "Noto Sans KR", sans-serif;
+    font-family: pixeltype;
     font-size: x-large;
     margin: 2rem;
     display: flex; 
     margin: 0;
     height: 100vh;
-}
-
-/* 한국어 페이지 폰트 크기 조정 - 영어와 유사한 비율 */
-html[lang="ko"] {
-    font-size: 14px;  /* 기본 폰트 크기 줄임 */
-}
-
-html[lang="ko"] .sidebar-nav .title {
-    font-size: 1.1rem;
-}
-
-html[lang="ko"] .description-box .title {
-    font-size: 1.6rem;
-}
-
-html[lang="ko"] .description-box p {
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-html[lang="ko"] .main-content h1 {
-    font-size: 2.2rem;
-}
-
-html[lang="ko"] .main-content p {
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-html[lang="ko"] .model-title {
-    font-size: 1.1rem;
-}
-
-html[lang="ko"] .model-box select,
-html[lang="ko"] .language-box select {
-    font-size: 1rem;
-}
-
-html[lang="ko"] textarea,
-html[lang="ko"] input {
-    font-size: 1rem;
-}
-
-html[lang="ko"] button {
-    font-size: 1.1rem;
 }
 
 a:link {
@@ -254,50 +201,6 @@ a:visited {
 @-moz-document url-prefix() {
   .model-box select option {
     font-size: 1rem; /* Firefox does not allow to set the font-family for select options so it looks bigger than it should be */
-  }
-}
-
-/* Language selector */
-.language-box {
-  background-color: #4a90d9; 
-  margin: 0 auto 1em auto;
-  width: 200px;
-  aspect-ratio: 300 / 83;
-  clip-path: polygon(
-    12px 0%,
-    calc(100% - 12px) 0%,
-    100% 12px,
-    100% calc(100% - 12px),
-    calc(100% - 12px) 100%,
-    12px 100%,
-    0% calc(100% - 12px),
-    0% 12px);
-}
-
-.language-box select {
-  background: white;
-  color: #1f48f2;
-  border: 2px solid #ccc;
-  border-radius: 0.3em;
-  font-family: inherit;
-  font-size: 1.4rem;
-  height: 1.2em;
-  text-align-last: center;
-  cursor: pointer;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.language-box select option {
-  text-align: center;
-  font-size: 1.4rem;
-}
-
-@-moz-document url-prefix() {
-  .language-box select option {
-    font-size: 1rem;
   }
 }
 

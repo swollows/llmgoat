@@ -1,20 +1,20 @@
 <div class="description-box">
   <div class="line-col" aria-hidden="true"></div>
   <div class="content">
-    <h2 class="title">{{ translations.a09_title | default('A09: Misinformation Challenge') }}</h2>
-    <p>{{ translations.a09_description | default('This challenge demonstrates a <a href="https://genai.owasp.org/llmrisk/llm092025-misinformation/" target="_blank">misinformation</a> vulnerability.') | safe }}</p>
-    <p>{{ translations.a09_goal | default('Your goal is to convince the assistant that this image depicts a <mark>Cyborg Goat</mark>.') | safe }}</p>
-    <p>{{ translations.a09_reset_note | default('To reset the challenge, just reload the page.') }}</p>
+    <h2 class="title">A09: Misinformation Challenge</h2>
+    <p>This challenge demonstrates a <a href="https://genai.owasp.org/llmrisk/llm092025-misinformation/" target="_blank">misinformation</a> vulnerability.</p>
+    <p>Your goal is to convince the assistant that this image depicts a <mark>Cyborg Goat</mark>.</p>
+    <p>To reset the challenge, just reload the page.</p>
     <br>
-    <a href="https://www.secforce.com/blog/llmgoat-a09-misinformation/" target="_blank" class="button">{{ translations.solution | default('SOLUTION') }}</a>
+    <a href="https://www.secforce.com/blog/llmgoat-a09-misinformation/" target="_blank" class="button">SOLUTION</a>
   </div>
 </div>
 
 <div class="button-box">
   <input type="file" id="upload-file" style="display:none" accept="image/*" />
-  <button id="download-btn" class="button">{{ translations.a09_download | default('DOWNLOAD IMAGE') }}</button>
-  <button id="upload-btn" class="button">{{ translations.a09_upload | default('UPLOAD IMAGE') }}</button>
-  <button id="process-btn" class="button">{{ translations.a09_process | default('PROCESS IMAGE') }}</button>
+  <button id="download-btn" class="button">DOWNLOAD IMAGE</button>
+  <button id="upload-btn" class="button">UPLOAD IMAGE</button>
+  <button id="process-btn" class="button">PROCESS IMAGE</button>
 </div>
 
 <div class="blue-box">
