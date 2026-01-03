@@ -50,9 +50,13 @@ body {
     height: 100vh;
 }
 
-/* 한국어 페이지 폰트 크기 미세 조정 */
+/* 한국어 페이지 폰트 크기 조정 */
 html[lang="ko"] .sidebar-nav .title {
-    font-size: 1.05rem;
+    font-size: 1.35rem;
+}
+
+html[lang="ko"] .sidebar-nav h2 {
+    font-size: 2.5rem;
 }
 
 html[lang="ko"] .description-box p {
@@ -61,12 +65,12 @@ html[lang="ko"] .description-box p {
 }
 
 html[lang="ko"] .model-title {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
 }
 
 html[lang="ko"] .model-box select,
 html[lang="ko"] .language-box select {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
 }
 
 a:link {
