@@ -50,27 +50,49 @@ body {
     height: 100vh;
 }
 
-/* 한국어 페이지 폰트 크기 조정 */
-html[lang="ko"] .sidebar-nav .title {
-    font-size: 1.35rem;
+/* 한국어 페이지 폰트 크기 조정 - 영어와 유사한 비율 */
+html[lang="ko"] {
+    font-size: 14px;  /* 기본 폰트 크기 줄임 */
 }
 
-html[lang="ko"] .sidebar-nav h2 {
-    font-size: 2.5rem;
+html[lang="ko"] .sidebar-nav .title {
+    font-size: 1.1rem;
+}
+
+html[lang="ko"] .description-box .title {
+    font-size: 1.6rem;
 }
 
 html[lang="ko"] .description-box p {
-    font-size: 1.15rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+html[lang="ko"] .main-content h1 {
+    font-size: 2.2rem;
+}
+
+html[lang="ko"] .main-content p {
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
 html[lang="ko"] .model-title {
-    font-size: 1.35rem;
+    font-size: 1.1rem;
 }
 
 html[lang="ko"] .model-box select,
 html[lang="ko"] .language-box select {
-    font-size: 1.3rem;
+    font-size: 1rem;
+}
+
+html[lang="ko"] textarea,
+html[lang="ko"] input {
+    font-size: 1rem;
+}
+
+html[lang="ko"] button {
+    font-size: 1.1rem;
 }
 
 a:link {
