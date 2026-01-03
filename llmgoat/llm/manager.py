@@ -38,16 +38,17 @@ QWEN3_32B_Q8_NAME = "Qwen3-32B-Q8_0.gguf"
 
 MODEL_SPECS = {
     # Windows/기본용
-    "qwen3_8b_q8": {
-        "name": QWEN3_8B_Q8_NAME,
-        "repo_id": "devmasa/Qwen3-8B-Q8_0-GGUF",
-        "filename": QWEN3_8B_Q8_NAME,
-        "sha256": None,
-    },
     "gemma2_9b_q4km": {
         "name": GEMMA2_9B_Q4KM_NAME,
         "repo_id": "bartowski/gemma-2-9b-it-GGUF",
         "filename": GEMMA2_9B_Q4KM_NAME,
+        "sha256": None,
+    },
+    
+    "qwen3_8b_q8": {
+        "name": QWEN3_8B_Q8_NAME,
+        "repo_id": "devmasa/Qwen3-8B-Q8_0-GGUF",
+        "filename": QWEN3_8B_Q8_NAME,
         "sha256": None,
     },
 
@@ -70,19 +71,19 @@ MODEL_SPECS = {
 # 기본 프로필에서 DGX급 파일을 실수로 받지 않도록 함.
 MODEL_PROFILES = {
     # 기본(Windows/일반 PC): Qwen3-8B 우선 + Gemma2-9B fallback
-    "default": ["qwen3_8b_q8", "gemma2_9b_q4km"],
+    "default": ["gemma2_9b_q4km", "qwen3_8b_q8"],
 
     # DGX: Gemma2-27B + Qwen3-32B를 함께 준비(번갈아 실습)
     # (fallback으로 Gemma2-9B도 같이)
-    "dgx": ["gemma2_27b_q6kl", "qwen3_32b_q8", "gemma2_9b_q4km"],
+    "dgx": ["gemma2_9b_q4km", "gemma2_27b_q6kl", "qwen3_32b_q8"],
 }
 
 DEFAULT_PROFILE = "default"
 
 # 로드 우선순위(프로필별)
 PROFILE_LOAD_PRIORITY = {
-    "default": [QWEN3_8B_Q8_NAME, GEMMA2_9B_Q4KM_NAME],
-    "dgx": [GEMMA2_27B_Q6KL_NAME, QWEN3_32B_Q8_NAME, GEMMA2_9B_Q4KM_NAME],
+    "default": [GEMMA2_9B_Q4KM_NAME, QWEN3_8B_Q8_NAME],
+    "dgx": [GEMMA2_9B_Q4KM_NAME, GEMMA2_27B_Q6KL_NAME, QWEN3_32B_Q8_NAME],
 }
 
 
@@ -294,7 +295,7 @@ class LLManager:
             # 3) Fallback: first available
             if not loaded:
                 goatlog.info(f"[LLManager] Fallback: loading first available model: {available_models[0]}")
-                self.load_model(available_models[0])
+            self.load_model(available_models[0])
 
         # Set HF verbosity
         verbose_env_value = os.environ.get(definitions.LLMGOAT_VERBOSE, str(int(False)))
