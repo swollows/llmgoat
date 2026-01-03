@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ lang | default('en') }}">
 <head>
     <title>LLMGoat - OWASP Top 10 for LLMs</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='icons/favicon.ico') }}">
@@ -15,7 +15,7 @@
         </a>
     </div>
     <nav class="sidebar-nav">
-        <h2>OWASP Top 10</h2>
+        <h2>{{ translations.owasp_top_10 | default('OWASP Top 10') }}</h2>
         <ul>
             {% for item in challenges %}
                 <li id="challenge-{{ item.id }}"
@@ -33,7 +33,7 @@
 
         <form id="model-select-form" class="model-box">
             <div class="model-inner-box">
-                <h3 class="model-title">Select Model</h3>
+                <h3 class="model-title">{{ translations.select_model | default('Select Model') }}</h3>
                 <select name="model_name" id="model-select">
                     {% for model in models %}
                         <option value="{{ model }}" {% if model == selected_model %}selected{% endif %}>
@@ -43,6 +43,19 @@
                 </select>
             </div>
         </form>
+
+        <div class="language-box">
+            <div class="model-inner-box">
+                <h3 class="model-title">{{ translations.language | default('Language') }}</h3>
+                <select id="language-select">
+                    {% for supported_lang in supported_languages | default(['en', 'ko']) %}
+                        <option value="{{ supported_lang }}" {% if supported_lang == lang %}selected{% endif %}>
+                            {% if supported_lang == 'en' %}English{% elif supported_lang == 'ko' %}한국어{% else %}{{ supported_lang }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
     </nav>
   </div>
     
@@ -61,6 +74,26 @@
 
     initModelStatus()
     initModelSelector();
+
+    // 언어 선택 핸들러
+    const langSelect = document.getElementById("language-select");
+    if (langSelect) {
+      langSelect.addEventListener("change", async function(e) {
+        const selectedLang = e.target.value;
+        try {
+          const res = await fetch("/api/set_language", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ language: selectedLang }),
+          });
+          if (res.ok) {
+            window.location.reload();
+          }
+        } catch (err) {
+          console.error("Failed to change language", err);
+        }
+      });
+    }
   </script>
 
 </body>

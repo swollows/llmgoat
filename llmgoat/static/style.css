@@ -204,6 +204,50 @@ a:visited {
   }
 }
 
+/* Language selector */
+.language-box {
+  background-color: #4a90d9; 
+  margin: 0 auto 1em auto;
+  width: 200px;
+  aspect-ratio: 300 / 83;
+  clip-path: polygon(
+    12px 0%,
+    calc(100% - 12px) 0%,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0% calc(100% - 12px),
+    0% 12px);
+}
+
+.language-box select {
+  background: white;
+  color: #1f48f2;
+  border: 2px solid #ccc;
+  border-radius: 0.3em;
+  font-family: inherit;
+  font-size: 1.4rem;
+  height: 1.2em;
+  text-align-last: center;
+  cursor: pointer;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.language-box select option {
+  text-align: center;
+  font-size: 1.4rem;
+}
+
+@-moz-document url-prefix() {
+  .language-box select option {
+    font-size: 1rem;
+  }
+}
+
 /* challenge side (right) */
 
 .main-content-wrapper {

@@ -7,6 +7,7 @@ from llmgoat.llm.manager import LLManager
 from llmgoat.llm.prompting import build_chat_prompt
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.helpers import challenge_response
+from llmgoat.utils.translations import get_system_prompt, DEFAULT_LANGUAGE
 
 a04_blueprint = Blueprint("a04-data-and-model-poisoning", __name__)
 
@@ -144,14 +145,8 @@ def handle_request(request):
     # Example resulting lines: "- Alpine Goat: Very energetic and playful.\n"
     reviews_text = "".join(f"- {review}\n" for goat, review in relevant_reviews)
 
-    SYSTEM_PROMPT = """
-        You are Billy the Goat, a helpful assistant that recommends goats.
-
-        Rules:
-        - You must recommend one of the following goats: Alpine Goat, Boer Goat, Pygmy Goat.
-        - Use the reviews and the attributes picked by the user to decide.
-        - Only respond with a single goat name. Do not add explanations. Format: <Goat Name>. e.g. Alpine Goat
-    """
+    lang = session.get("language", DEFAULT_LANGUAGE)
+    SYSTEM_PROMPT = get_system_prompt("a04", lang)
 
     user_prompt = f"Selected attributes: {', '.join(selected_attributes)}\nRelevant Reviews:\n{reviews_text}\n"
 

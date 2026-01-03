@@ -11,23 +11,38 @@ from llmgoat import __title__, __version__, __description__
 from llmgoat.llm.manager import LLManager
 from llmgoat.utils import definitions, helpers
 from llmgoat.utils.logger import goatlog
+from llmgoat.utils.translations import (
+    get_translation, get_all_translations, get_system_prompt,
+    SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE
+)
 
 app = Flask(__name__)
 app.secret_key = "your-super-secret-key"  # Needed for session support
 
 
-OWASP_TOP_10 = [
-    {"id": "a01-prompt-injection", "title": "A01: Prompt Injection"},
-    {"id": "a02-sensitive-information-disclosure", "title": "A02: Sensitive Information Disclosure"},
-    {"id": "a03-supply-chain-vulnerabilities", "title": "A03: Supply Chain"},
-    {"id": "a04-data-and-model-poisoning", "title": "A04: Data and Model Poisoning"},
-    {"id": "a05-improper-output-handling", "title": "A05: Improper Output Handling"},
-    {"id": "a06-excessive-agency", "title": "A06: Excessive Agency"},
-    {"id": "a07-system-prompt-leakage", "title": "A07: System Prompt Leakage"},
-    {"id": "a08-vector-embedding-weaknesses", "title": "A08: Vector and Embedding Weaknesses"},
-    {"id": "a09-misinformation", "title": "A09: Misinformation"},
-    {"id": "a10-unbounded-consumption", "title": "A10: Unbounded Consumption"}
-]
+def get_owasp_top_10(lang: str = DEFAULT_LANGUAGE):
+    """언어에 따른 OWASP Top 10 목록 반환"""
+    return [
+        {"id": "a01-prompt-injection", "title": get_translation("sidebar_a01", lang)},
+        {"id": "a02-sensitive-information-disclosure", "title": get_translation("sidebar_a02", lang)},
+        {"id": "a03-supply-chain-vulnerabilities", "title": get_translation("sidebar_a03", lang)},
+        {"id": "a04-data-and-model-poisoning", "title": get_translation("sidebar_a04", lang)},
+        {"id": "a05-improper-output-handling", "title": get_translation("sidebar_a05", lang)},
+        {"id": "a06-excessive-agency", "title": get_translation("sidebar_a06", lang)},
+        {"id": "a07-system-prompt-leakage", "title": get_translation("sidebar_a07", lang)},
+        {"id": "a08-vector-embedding-weaknesses", "title": get_translation("sidebar_a08", lang)},
+        {"id": "a09-misinformation", "title": get_translation("sidebar_a09", lang)},
+        {"id": "a10-unbounded-consumption", "title": get_translation("sidebar_a10", lang)},
+    ]
+
+
+# 기본 OWASP_TOP_10 (영어, 호환성 유지)
+OWASP_TOP_10 = get_owasp_top_10(DEFAULT_LANGUAGE)
+
+
+def get_current_language() -> str:
+    """현재 세션의 언어 설정 반환"""
+    return session.get("language", DEFAULT_LANGUAGE)
 
 llm_lock = threading.Lock()
 
@@ -42,14 +57,18 @@ def log_request_info():
 
 @app.route("/")
 def index():
+    lang = get_current_language()
     return render_template(
         "layout.html",
-        challenges=OWASP_TOP_10,
+        challenges=get_owasp_top_10(lang),
         current_challenge=None,
         completed_challenges=session.get("completed_challenges", []),
         content_template="welcome_content.html",
         models=LLManager().available_models(),
-        selected_model=LLManager().get_current_model_name()
+        selected_model=LLManager().get_current_model_name(),
+        lang=lang,
+        translations=get_all_translations(lang),
+        supported_languages=SUPPORTED_LANGUAGES,
     )
 
 
@@ -60,15 +79,30 @@ def load_challenge(challenge_id):
     if not os.path.exists(os.path.join(definitions.MAIN_DIR, "templates", challenge_template)):
         abort(404)
 
+    lang = get_current_language()
     return render_template(
         "layout.html",
-        challenges=OWASP_TOP_10,
+        challenges=get_owasp_top_10(lang),
         current_challenge=challenge_id,
         completed_challenges=session.get("completed_challenges", []),
         content_template=challenge_template,
         models=LLManager().available_models(),
-        selected_model=LLManager().get_current_model_name()
+        selected_model=LLManager().get_current_model_name(),
+        lang=lang,
+        translations=get_all_translations(lang),
+        supported_languages=SUPPORTED_LANGUAGES,
     )
+
+
+@app.route("/api/set_language", methods=["POST"])
+def set_language():
+    """언어 설정 변경 API"""
+    data = request.json or {}
+    lang = data.get("language", DEFAULT_LANGUAGE)
+    if lang in SUPPORTED_LANGUAGES:
+        session["language"] = lang
+        return jsonify({"success": True, "language": lang})
+    return jsonify({"error": "Unsupported language"}), 400
 
 
 @app.route("/api/model_status", methods=["GET"])

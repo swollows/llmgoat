@@ -1,11 +1,11 @@
 <div class="description-box">
   <div class="line-col" aria-hidden="true"></div>
   <div class="content">
-    <h2 class="title">A04: Data &amp; Model Poisoning</h2>
-    <p>This challenge demonstrates a <a href="https://genai.owasp.org/llmrisk/llm042025-data-and-model-poisoning/" target="_blank">data poisoning</a> vulnerability.</p>
-    <p>Your goal is to poison the recommendations by leaving reviews and get the assistant to recommend a <mark>Space Chicken</mark>.</p>
+    <h2 class="title">{{ translations.a04_title | default('A04: Data & Model Poisoning') }}</h2>
+    <p>{{ translations.a04_description | default('This challenge demonstrates a <a href="https://genai.owasp.org/llmrisk/llm042025-data-and-model-poisoning/" target="_blank">data poisoning</a> vulnerability.') | safe }}</p>
+    <p>{{ translations.a04_goal | default('Your goal is to poison the recommendations by leaving reviews and get the assistant to recommend a <mark>Space Chicken</mark>.') | safe }}</p>
     <br>
-    <a href="https://www.secforce.com/blog/llmgoat-a04-data-and-model-poisoning/" target="_blank" class="button">SOLUTION</a>
+    <a href="https://www.secforce.com/blog/llmgoat-a04-data-and-model-poisoning/" target="_blank" class="button">{{ translations.solution | default('SOLUTION') }}</a>
   </div>
 </div>
 
@@ -71,41 +71,41 @@
 
 <div id="reviews-box" class="reviews-box">
   <div class="reviews-header">
-    <div id="reviews-title">Select a goat to see reviews</div>
+    <div id="reviews-title">{{ translations.a04_select_goat | default('Select a goat to see reviews') }}</div>
     <div>
-      <button id="reset-reviews-btn" title="Reset user-added reviews" class="black-button">RESET REVIEWS</button>
+      <button id="reset-reviews-btn" title="Reset user-added reviews" class="black-button">{{ translations.a04_reset_reviews | default('RESET REVIEWS') }}</button>
     </div>
   </div>
 
   <ul id="reviews-list"></ul>
 
   <div class="add-review-row">
-    <input type="text" id="new-review" placeholder="Add a new review"/>
-    <button id="add-review-btn" class="yellow-button">ADD REVIEW</button>
+    <input type="text" id="new-review" placeholder="{{ translations.a04_add_review_placeholder | default('Add a new review') }}"/>
+    <button id="add-review-btn" class="yellow-button">{{ translations.a04_add_review | default('ADD REVIEW') }}</button>
   </div>
 </div>
 
 <div id="attributes-box" class="attributes-box">
   <div class="attributes-title">
-    Choose Important Attributes
+    {{ translations.a04_choose_attributes | default('Choose Important Attributes') }}
   </div>
   <div id="tags-container" class="tags-container">
-    <span class="tag" data-value="fast">Fast</span>
-    <span class="tag" data-value="slow">Slow</span>
-    <span class="tag" data-value="friendly">Friendly</span>
-    <span class="tag" data-value="independent">Independent</span>
-    <span class="tag" data-value="milky">Milky</span>
-    <span class="tag" data-value="small">Small</span>
-    <span class="tag" data-value="energetic">Energetic</span>
-    <span class="tag" data-value="playful">Playful</span>
-    <span class="tag" data-value="stubborn">Stubborn</span>
-    <span class="tag" data-value="curious">Curious</span>
-    <span class="tag" data-value="friendly_to_kids">Friendly to Kids</span>
-    <span class="tag" data-value="quiet">Quiet</span>
-    <span class="tag" data-value="obedient">Obedient</span>
+    <span class="tag" data-value="fast">{{ translations.a04_attr_fast | default('Fast') }}</span>
+    <span class="tag" data-value="slow">{{ translations.a04_attr_slow | default('Slow') }}</span>
+    <span class="tag" data-value="friendly">{{ translations.a04_attr_friendly | default('Friendly') }}</span>
+    <span class="tag" data-value="independent">{{ translations.a04_attr_independent | default('Independent') }}</span>
+    <span class="tag" data-value="milky">{{ translations.a04_attr_milky | default('Milky') }}</span>
+    <span class="tag" data-value="small">{{ translations.a04_attr_small | default('Small') }}</span>
+    <span class="tag" data-value="energetic">{{ translations.a04_attr_energetic | default('Energetic') }}</span>
+    <span class="tag" data-value="playful">{{ translations.a04_attr_playful | default('Playful') }}</span>
+    <span class="tag" data-value="stubborn">{{ translations.a04_attr_stubborn | default('Stubborn') }}</span>
+    <span class="tag" data-value="curious">{{ translations.a04_attr_curious | default('Curious') }}</span>
+    <span class="tag" data-value="friendly_to_kids">{{ translations.a04_attr_friendly_to_kids | default('Friendly to Kids') }}</span>
+    <span class="tag" data-value="quiet">{{ translations.a04_attr_quiet | default('Quiet') }}</span>
+    <span class="tag" data-value="obedient">{{ translations.a04_attr_obedient | default('Obedient') }}</span>
   </div>
   <div style="text-align:center; margin-top:0.5em;">
-    <button id="get-recommendation-btn" class="button">GET RECOMMENDATION</button>
+    <button id="get-recommendation-btn" class="button">{{ translations.a04_get_recommendation | default('GET RECOMMENDATION') }}</button>
   </div>
 </div>
 

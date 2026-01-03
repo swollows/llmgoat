@@ -9,6 +9,7 @@ from llmgoat.llm.prompting import build_chat_prompt
 from llmgoat.utils.logger import goatlog
 from llmgoat.utils.definitions import MAIN_DIR
 from llmgoat.utils.helpers import challenge_response
+from llmgoat.utils.translations import get_system_prompt, DEFAULT_LANGUAGE
 
 from .metadata_utils import extract_all_png_metadata_from_image
 from .image_utils import classify_image, get_image_rgb_hash
@@ -102,11 +103,8 @@ def handle_request(request):
     else:
         return result
 
-    SYSTEM_PROMPT = """
-        You are an assistant that describes the content of images.
-        You describe them truthfully based on the classification information you are provided.
-        Do not add any disclaimer about not having access to image content.
-    """
+    lang = session.get("language", DEFAULT_LANGUAGE)
+    SYSTEM_PROMPT = get_system_prompt("a09", lang)
 
     user_input = (
         f"Image metadata: {metadata} EXIF data: {exif}.\n"
